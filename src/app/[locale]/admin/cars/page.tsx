@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Link } from '@/i18n/routing';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { CatalogToggle, CatalogDeleteButton } from '@/components/admin/catalog-toggle';
 
 export default async function AdminCarsPage({
@@ -35,7 +35,12 @@ export default async function AdminCarsPage({
 
   return (
     <div className="px-4 py-8 md:px-8">
-      <h1 className="mb-6 font-display text-2xl font-bold">Cars</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="font-display text-2xl font-bold">Cars</h1>
+        <Link href="/admin/cars/new" className="flex items-center gap-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+          <Plus className="h-4 w-4" /> New car
+        </Link>
+      </div>
 
       <form className="mb-4 flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3">
         <div className="relative flex-1">
@@ -82,9 +87,8 @@ export default async function AdminCarsPage({
                     )}
                     <div>
                       <Link
-                        href={`/cars/${c.slug}` as any}
+                        href={`/admin/cars/${c.id}` as any}
                         className="font-medium text-slate-800 hover:text-brand-700"
-                        target="_blank"
                       >
                         {c.name}
                       </Link>

@@ -86,6 +86,37 @@ const MODELS: Record<string, ModelHandler> = {
     required: ['name', 'provider', 'pricePerDay'],
     slugFrom: 'name',
   },
+  tour: {
+    delegate: 'tour',
+    fields: [
+      'slug', 'title', 'shortDesc', 'description', 'highlights', 'included', 'excluded', 'itinerary',
+      'durationHours', 'durationDays', 'meetingPoint', 'difficulty', 'minAge', 'maxGroupSize',
+      'basePrice', 'childPrice', 'discountPercent', 'baseCurrency', 'destinationId', 'categoryId',
+      'isFeatured', 'isActive',
+    ],
+    required: ['title', 'basePrice', 'destinationId'],
+    slugFrom: 'title',
+  },
+  car: {
+    delegate: 'car',
+    fields: [
+      'slug', 'name', 'brand', 'model', 'year', 'category', 'transmission', 'fuelType',
+      'seats', 'luggage', 'withDriver', 'pickupLocations', 'dailyPrice', 'baseCurrency',
+      'description', 'features', 'isFeatured', 'isActive',
+    ],
+    required: ['name', 'brand', 'model', 'category', 'transmission', 'dailyPrice'],
+    slugFrom: 'name',
+  },
+  hotel: {
+    delegate: 'hotel',
+    fields: [
+      'slug', 'name', 'shortDesc', 'description', 'address', 'latitude', 'longitude',
+      'starRating', 'amenities', 'policies', 'checkInTime', 'checkOutTime',
+      'basePrice', 'baseCurrency', 'destinationId', 'isFeatured', 'isActive',
+    ],
+    required: ['name', 'address', 'basePrice', 'destinationId'],
+    slugFrom: 'name',
+  },
 };
 
 function pick(body: Record<string, any>, fields: string[]): Record<string, any> {
@@ -124,7 +155,13 @@ export async function POST(
   }
 
   // Coerce numeric
-  for (const k of ['price', 'basePrice', 'discountValue', 'durationMinutes', 'durationHours', 'maxGroupSize', 'minAge', 'totalSeats', 'sortOrder', 'pricePerDay', 'medicalCoverage', 'tripCancellation', 'baggageCoverage', 'priceOverride']) {
+  for (const k of [
+    'price', 'basePrice', 'childPrice', 'dailyPrice', 'discountValue', 'discountPercent',
+    'durationMinutes', 'durationHours', 'durationDays', 'maxGroupSize', 'minAge',
+    'totalSeats', 'sortOrder', 'pricePerDay', 'medicalCoverage', 'tripCancellation',
+    'baggageCoverage', 'priceOverride', 'starRating', 'seats', 'luggage', 'year',
+    'latitude', 'longitude',
+  ]) {
     if (data[k] !== undefined && data[k] !== null && data[k] !== '') data[k] = Number(data[k]);
   }
   // Coerce dates

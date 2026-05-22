@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Link } from '@/i18n/routing';
-import { Search } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { CatalogToggle, CatalogDeleteButton } from '@/components/admin/catalog-toggle';
 
 const PAGE_SIZE = 25;
@@ -41,9 +41,12 @@ export default async function AdminToursPage({
     <div className="px-4 py-8 md:px-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold">Tours</h1>
+          <h1 className="font-display text-2xl font-bold">Packages</h1>
           <p className="text-sm text-slate-500">{total} total</p>
         </div>
+        <Link href="/admin/tours/new" className="flex items-center gap-1 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+          <Plus className="h-4 w-4" /> New package
+        </Link>
       </div>
 
       <form className="mb-4 flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3">
@@ -98,9 +101,8 @@ export default async function AdminToursPage({
                     )}
                     <div className="min-w-0">
                       <Link
-                        href={`/tours/${t.slug}` as any}
+                        href={`/admin/tours/${t.id}` as any}
                         className="block truncate font-medium text-slate-800 hover:text-brand-700"
-                        target="_blank"
                       >
                         {t.title}
                       </Link>
