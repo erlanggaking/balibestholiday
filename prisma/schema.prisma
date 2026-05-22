@@ -1,8 +1,17 @@
 // ============================================================
-// Bali Best Holiday — Prisma Schema (SQLite for dev convenience)
+// Bali Best Holiday — Prisma Schema (PostgreSQL)
 // Super App Travel: Tours, Hotels, Car Rentals, Flights, Insurance
 // Multi-language (20) & Multi-currency (20)
-// Note: array columns stored as JSON-encoded TEXT (SQLite has no array type)
+//
+// Production DB: Supabase Postgres (with PgBouncer connection pooling)
+// - DATABASE_URL: pooled (port 6543, ?pgbouncer=true) — used at runtime
+// - DIRECT_URL:   direct (port 5432) — used by Prisma Migrate
+//
+// Local dev (SQLite):
+// 1. flip provider back to "sqlite" and url to "file:./dev.db"
+// 2. or run a local Postgres and point DATABASE_URL to it
+//
+// Note: array fields are stored as JSON-encoded TEXT for portability with SQLite.
 // ============================================================
 
 generator client {
@@ -10,8 +19,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ------------------------------------------------------------
