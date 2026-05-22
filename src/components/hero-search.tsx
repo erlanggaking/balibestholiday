@@ -17,6 +17,7 @@ type TabId = (typeof tabs)[number]['id'];
 
 export function HeroSearch() {
   const t = useTranslations();
+  const tHome = useTranslations('home');
   const [tab, setTab] = useState<TabId>('flights');
 
   return (
@@ -33,7 +34,7 @@ export function HeroSearch() {
             }`}
           >
             <span className="mr-1.5">{tabItem.icon}</span>
-            {t(`nav.${tabItem.id}`)}
+            {t(tabItem.id === 'tours' ? 'nav.packages' : `nav.${tabItem.id}`)}
           </button>
         ))}
       </div>
@@ -42,36 +43,28 @@ export function HeroSearch() {
         {tab === 'flights' && <FlightSearchForm />}
         {tab === 'hotels' && <StaySearchForm />}
         {tab === 'tours' && (
-          <div className="rounded-2xl bg-white p-8 text-center shadow-xl">
-            <p className="text-slate-600">
-              Browse curated Bali tours →{' '}
-              <a href="/tours" className="font-semibold text-brand-600 underline">
-                See all tours
-              </a>
-            </p>
-          </div>
+          <BrowseLink href="/tours" label={t('nav.packages')} viewAll={tHome('viewAll')} />
         )}
         {tab === 'cars' && (
-          <div className="rounded-2xl bg-white p-8 text-center shadow-xl">
-            <p className="text-slate-600">
-              Browse car rentals →{' '}
-              <a href="/cars" className="font-semibold text-brand-600 underline">
-                See all cars
-              </a>
-            </p>
-          </div>
+          <BrowseLink href="/cars" label={t('nav.cars')} viewAll={tHome('viewAll')} />
         )}
         {tab === 'insurance' && (
-          <div className="rounded-2xl bg-white p-8 text-center shadow-xl">
-            <p className="text-slate-600">
-              Travel insurance plans →{' '}
-              <a href="/insurance" className="font-semibold text-brand-600 underline">
-                Compare plans
-              </a>
-            </p>
-          </div>
+          <BrowseLink href="/insurance" label={t('nav.insurance')} viewAll={tHome('viewAll')} />
         )}
       </div>
+    </div>
+  );
+}
+
+function BrowseLink({ href, label, viewAll }: { href: string; label: string; viewAll: string }) {
+  return (
+    <div className="rounded-2xl bg-white p-8 text-center shadow-xl">
+      <p className="text-slate-600">
+        {label} →{' '}
+        <a href={href} className="font-semibold text-brand-600 underline">
+          {viewAll}
+        </a>
+      </p>
     </div>
   );
 }

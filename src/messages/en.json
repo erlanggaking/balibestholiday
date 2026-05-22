@@ -17,7 +17,11 @@
     "bookings": "My Bookings",
     "wishlist": "Wishlist",
     "signout": "Sign Out",
-    "admin": "Admin"
+    "admin": "Admin",
+    "packages": "Packages",
+    "activities": "Activities",
+    "buses": "Bus",
+    "customPackage": "Custom Package"
   },
   "home": {
     "heroTitle": "Discover the Magic of Bali",
@@ -36,7 +40,10 @@
     "whyUs3Desc": "Hand-picked operators rated by real travelers.",
     "whyUs4Title": "Secure Payment",
     "whyUs4Desc": "Industry-leading encryption with Stripe.",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "destinationsTitle": "Top destinations in Bali",
+    "listings": "listings",
+    "emptyDataInfo": "Coming soon — content will appear once the catalog is populated."
   },
   "search": {
     "destination": "Destination",
@@ -44,13 +51,23 @@
     "checkOut": "Check-out",
     "date": "Date",
     "guests": "Guests",
-    "adults": "Adults",
+    "adults": "Adults (12+)",
     "children": "Children",
     "rooms": "Rooms",
     "from": "From",
     "to": "To",
     "passengers": "Passengers",
-    "search": "Search"
+    "search": "Search",
+    "flights": "Search Flights",
+    "hotels": "Search Hotels",
+    "roundTrip": "Round trip",
+    "oneWay": "One way",
+    "departure": "Departure",
+    "return": "Return",
+    "cabin": "Cabin",
+    "childrenAges": "Children (2-11)",
+    "originPlaceholder": "Origin city or airport",
+    "destinationPlaceholder": "Destination city or airport"
   },
   "product": {
     "perPerson": "per person",

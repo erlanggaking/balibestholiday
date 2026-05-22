@@ -8,17 +8,16 @@ import { LanguageSwitcher } from './language-switcher';
 import { CurrencySwitcher } from './currency-switcher';
 import { useSession, signOut } from 'next-auth/react';
 
-// Note: 'tours' translation key is reused as "Packages" label in i18n files
-// (or shown literally if not yet translated)
-type NavItem = { href: string; label: string; highlight?: boolean };
+// nav items use i18n keys via t('nav.<key>')
+type NavItem = { href: string; key: string; highlight?: boolean };
 const navItems: NavItem[] = [
-  { href: '/tours', label: 'Packages' },
-  { href: '/activities', label: 'Activities' },
-  { href: '/hotels', label: 'Hotels' },
-  { href: '/cars', label: 'Cars' },
-  { href: '/buses', label: 'Bus' },
-  { href: '/flights', label: 'Flights' },
-  { href: '/custom-package', label: 'Custom Package', highlight: true },
+  { href: '/tours', key: 'packages' },
+  { href: '/activities', key: 'activities' },
+  { href: '/hotels', key: 'hotels' },
+  { href: '/cars', key: 'cars' },
+  { href: '/buses', key: 'buses' },
+  { href: '/flights', key: 'flights' },
+  { href: '/custom-package', key: 'customPackage', highlight: true },
 ];
 
 export function SiteHeader() {
@@ -39,7 +38,7 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-5 lg:flex">
           {navItems.map((item) => (
             <Link
-              key={item.label}
+              key={item.key}
               href={item.href as any}
               className={`text-sm font-medium transition ${
                 item.highlight
@@ -47,7 +46,7 @@ export function SiteHeader() {
                   : 'text-slate-700 hover:text-brand-600'
               }`}
             >
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
         </nav>
@@ -103,7 +102,7 @@ export function SiteHeader() {
           <div className="mx-auto max-w-7xl space-y-1 px-4 py-3">
             {navItems.map((item) => (
               <Link
-                key={item.label}
+                key={item.key}
                 href={item.href as any}
                 onClick={() => setOpen(false)}
                 className={`block rounded-lg px-3 py-2 text-base font-medium ${
@@ -112,7 +111,7 @@ export function SiteHeader() {
                     : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             ))}
             <div className="flex items-center gap-2 px-3 py-2">

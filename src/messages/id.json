@@ -17,7 +17,11 @@
     "bookings": "Pesanan Saya",
     "wishlist": "Favorit",
     "signout": "Keluar",
-    "admin": "Admin"
+    "admin": "Admin",
+    "packages": "Paket Wisata",
+    "activities": "Aktivitas",
+    "buses": "Bus",
+    "customPackage": "Paket Custom"
   },
   "home": {
     "heroTitle": "Jelajahi Keajaiban Bali",
@@ -36,7 +40,10 @@
     "whyUs3Desc": "Operator pilihan dengan rating dari traveler asli.",
     "whyUs4Title": "Pembayaran Aman",
     "whyUs4Desc": "Enkripsi terdepan dengan Stripe.",
-    "viewAll": "Lihat semua"
+    "viewAll": "Lihat semua",
+    "destinationsTitle": "Destinasi Populer di Bali",
+    "listings": "pilihan",
+    "emptyDataInfo": "Segera hadir — konten akan tampil setelah katalog diisi."
   },
   "search": {
     "destination": "Destinasi",
@@ -44,13 +51,23 @@
     "checkOut": "Check-out",
     "date": "Tanggal",
     "guests": "Tamu",
-    "adults": "Dewasa",
+    "adults": "Dewasa (12+)",
     "children": "Anak",
     "rooms": "Kamar",
     "from": "Dari",
     "to": "Ke",
     "passengers": "Penumpang",
-    "search": "Cari"
+    "search": "Cari",
+    "flights": "Cari Penerbangan",
+    "hotels": "Cari Hotel",
+    "roundTrip": "Pulang pergi",
+    "oneWay": "Sekali jalan",
+    "departure": "Berangkat",
+    "return": "Pulang",
+    "cabin": "Kelas Kabin",
+    "childrenAges": "Anak-anak (2-11)",
+    "originPlaceholder": "Kota atau bandara asal",
+    "destinationPlaceholder": "Kota atau bandara tujuan"
   },
   "product": {
     "perPerson": "per orang",

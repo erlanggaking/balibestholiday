@@ -96,7 +96,7 @@ export default async function HomePage({
       {/* DESTINATIONS */}
       {destinations.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <SectionHeader title="Destinations in Bali" />
+          <SectionHeader title={t('destinationsTitle')} />
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
             {destinations.map((d) => (
               <Link
@@ -114,7 +114,7 @@ export default async function HomePage({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-2 left-2 right-2 text-white">
                   <p className="text-sm font-semibold">{tr(d, 'name') ?? d.name}</p>
-                  <p className="text-xs opacity-90">{d._count.tours + d._count.hotels} listings</p>
+                  <p className="text-xs opacity-90">{d._count.tours + d._count.hotels} {t('listings')}</p>
                 </div>
               </Link>
             ))}
@@ -126,7 +126,7 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <SectionHeader title={t('featuredTours')} viewAllHref="/tours" viewAllLabel={t('viewAll')} />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredTours.length === 0 && <EmptyState />}
+          {featuredTours.length === 0 && <EmptyState message={t('emptyDataInfo')} />}
           {featuredTours.map((tour) => (
             <ProductCard
               key={tour.id}
@@ -151,7 +151,7 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <SectionHeader title={t('featuredHotels')} viewAllHref="/hotels" viewAllLabel={t('viewAll')} />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredHotels.length === 0 && <EmptyState />}
+          {featuredHotels.length === 0 && <EmptyState message={t('emptyDataInfo')} />}
           {featuredHotels.map((h) => (
             <ProductCard
               key={h.id}
@@ -173,7 +173,7 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <SectionHeader title={t('popularCars')} viewAllHref="/cars" viewAllLabel={t('viewAll')} />
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {popularCars.length === 0 && <EmptyState />}
+          {popularCars.length === 0 && <EmptyState message={t('emptyDataInfo')} />}
           {popularCars.map((c) => (
             <ProductCard
               key={c.id}
@@ -230,10 +230,10 @@ function SectionHeader({
   );
 }
 
-function EmptyState() {
+function EmptyState({ message }: { message?: string }) {
   return (
     <div className="col-span-full rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center text-slate-500">
-      No data yet. Run <code className="rounded bg-slate-100 px-1.5 py-0.5">npm run db:seed</code> to load samples.
+      {message ?? 'Coming soon — content will appear once the catalog is populated.'}
     </div>
   );
 }

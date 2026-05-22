@@ -7,7 +7,7 @@ import { CURRENCY_COOKIE } from '@/lib/cookie-keys';
 
 export function CurrencySwitcher() {
   const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState('USD');
+  const [current, setCurrent] = useState('IDR');
 
   useEffect(() => {
     const m = document.cookie.match(new RegExp(`(^|; )${CURRENCY_COOKIE}=([^;]+)`));
