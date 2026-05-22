@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Plane, Briefcase, Clock, RefreshCw, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { Price } from './price';
 
@@ -55,6 +56,7 @@ interface Props {
 const PAGE_SIZE = 20;
 
 export function FlightResultsClient({ offers, route, carriers }: Props) {
+  const t = useTranslations('flightResults');
   const [sort, setSort] = useState<SortKey>('price');
   const [selectedCarriers, setSelectedCarriers] = useState<Set<string>>(new Set());
   const [stopFilter, setStopFilter] = useState<StopFilter>('any');
@@ -129,25 +131,25 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
       {/* Sidebar filters */}
       <aside className="h-fit space-y-5 rounded-2xl border border-slate-200 bg-white p-5 lg:sticky lg:top-24">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">Filters</h3>
+          <h3 className="font-semibold">{t('filters')}</h3>
           <button
             type="button"
             onClick={resetFilters}
             className="text-xs text-brand-600 hover:underline"
           >
-            Reset
+            {t('reset')}
           </button>
         </div>
 
-        <FilterSection title="Stops">
+        <FilterSection title={t('stops')}>
           <div className="space-y-1">
             {(
               [
-                ['any', 'Any'],
-                ['0', 'Direct only'],
-                ['1', '1 stop'],
-                ['2+', '2+ stops'],
-              ] as const
+                ['any', t('any')],
+                ['0', t('directOnly')],
+                ['1', t('oneStop')],
+                ['2+', t('twoPlusStops')],
+              ] as [StopFilter, string][]
             ).map(([v, label]) => (
               <label key={v} className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
@@ -165,7 +167,7 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
           </div>
         </FilterSection>
 
-        <FilterSection title={`Airlines (${carriers.length})`}>
+        <FilterSection title={`${t('airlines')} (${carriers.length})`}>
           <div className="max-h-56 space-y-1 overflow-auto pr-1">
             {carriers
               .sort((a, b) => (carrierCounts.get(b.iata_code) ?? 0) - (carrierCounts.get(a.iata_code) ?? 0))
@@ -184,7 +186,7 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
           </div>
         </FilterSection>
 
-        <FilterSection title="Max price">
+        <FilterSection title={t('maxPrice')}>
           <input
             type="range"
             min={Math.floor(cheapest)}
@@ -206,7 +208,7 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
           </div>
         </FilterSection>
 
-        <FilterSection title="Conditions">
+        <FilterSection title={t('conditions')}>
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
@@ -217,7 +219,7 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
               }}
               className="rounded text-brand-600"
             />
-            Refundable only
+            {t('refundableOnly')}
           </label>
         </FilterSection>
       </aside>
@@ -230,37 +232,38 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
               {route.origin} → {route.destination}
             </h2>
             <p className="text-xs text-slate-500">
-              Showing <span className="font-semibold text-slate-900">{sorted.length}</span> of{' '}
-              {offers.length} live results from {carriers.length} airline
-              {carriers.length === 1 ? '' : 's'}
+              {t('showing')}{' '}
+              <span className="font-semibold text-slate-900">{sorted.length}</span> {t('of')}{' '}
+              {offers.length} {t('liveResults')} {carriers.length}{' '}
+              {carriers.length === 1 ? t('airline') : t('airlinePlural')}
             </p>
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <span className="text-slate-500">Sort by:</span>
+            <span className="text-slate-500">{t('sortBy')}</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
               className="rounded-lg border border-slate-200 bg-white py-1.5 px-3 text-sm focus:border-brand-500 focus:outline-none"
             >
-              <option value="price">Cheapest</option>
-              <option value="duration">Shortest duration</option>
-              <option value="departure">Earliest departure</option>
-              <option value="fewest_stops">Fewest stops</option>
+              <option value="price">{t('cheapest')}</option>
+              <option value="duration">{t('shortestDuration')}</option>
+              <option value="departure">{t('earliestDeparture')}</option>
+              <option value="fewest_stops">{t('fewestStops')}</option>
             </select>
           </label>
         </div>
 
         {sorted.length === 0 && (
           <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-            No flights match your filters.{' '}
+            {t('noMatches')}{' '}
             <button onClick={resetFilters} className="text-brand-600 hover:underline">
-              Reset
+              {t('reset')}
             </button>
           </div>
         )}
 
         {visible.map((o) => (
-          <FlightOfferCard key={o.id} offer={o} />
+          <FlightOfferCard key={o.id} offer={o} t={t} />
         ))}
 
         {visible.length < sorted.length && (
@@ -269,7 +272,7 @@ export function FlightResultsClient({ offers, route, carriers }: Props) {
               onClick={() => setPage((p) => p + 1)}
               className="rounded-xl border border-brand-200 bg-brand-50 px-6 py-2.5 font-semibold text-brand-700 transition hover:bg-brand-100"
             >
-              Show {Math.min(PAGE_SIZE, sorted.length - visible.length)} more
+              {t('showMore', { n: Math.min(PAGE_SIZE, sorted.length - visible.length) })}
             </button>
           </div>
         )}
@@ -301,7 +304,7 @@ function FilterSection({
   );
 }
 
-function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
+function FlightOfferCard({ offer, t }: { offer: NormalizedOffer; t: ReturnType<typeof useTranslations> }) {
   const [expanded, setExpanded] = useState(false);
   const checked = offer.baggages_per_passenger.find((b) => b.type === 'checked')?.quantity ?? 0;
   const carryOn = offer.baggages_per_passenger.find((b) => b.type === 'carry_on')?.quantity ?? 0;
@@ -316,7 +319,10 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
               s={s}
               ownerLogo={offer.owner.logo}
               ownerName={offer.owner.name}
-              direction={offer.slices.length === 1 ? null : i === 0 ? 'Outbound' : 'Return'}
+              direction={
+                offer.slices.length === 1 ? null : i === 0 ? t('outbound') : t('returnLeg')
+              }
+              t={t}
             />
           ))}
 
@@ -324,22 +330,22 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
             {(checked > 0 || carryOn > 0) && (
               <span className="inline-flex items-center gap-1">
                 <Briefcase className="h-3.5 w-3.5" />
-                {checked > 0 && `${checked} checked`}
+                {checked > 0 && `${checked}× checked`}
                 {checked > 0 && carryOn > 0 && ' + '}
-                {carryOn > 0 && `${carryOn} carry-on`}
+                {carryOn > 0 && `${carryOn}× carry-on`}
               </span>
             )}
             {offer.conditions.refund_before_departure ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
-                <RefreshCw className="h-3 w-3" /> Refundable
+                <RefreshCw className="h-3 w-3" /> {t('refundable')}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-slate-500">
-                <X className="h-3 w-3" /> Non-refundable
+                <X className="h-3 w-3" /> {t('nonRefundable')}
               </span>
             )}
             {offer.conditions.change_before_departure && (
-              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700">Changeable</span>
+              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-blue-700">{t('changeable')}</span>
             )}
             {offer.slices[0]?.fare_brand_name && (
               <span className="rounded-full bg-slate-100 px-2 py-0.5 capitalize">
@@ -351,7 +357,7 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
               onClick={() => setExpanded((v) => !v)}
               className="ml-auto text-xs text-brand-600 hover:underline"
             >
-              {expanded ? 'Hide details' : 'Flight details'}
+              {expanded ? t('hideDetails') : t('flightDetails')}
             </button>
           </div>
 
@@ -360,7 +366,11 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
               {offer.slices.map((s, idx) => (
                 <div key={idx} className={idx > 0 ? 'mt-3 border-t pt-3' : ''}>
                   <div className="mb-1 font-semibold">
-                    {offer.slices.length === 1 ? 'Itinerary' : idx === 0 ? 'Outbound' : 'Return'}
+                    {offer.slices.length === 1
+                      ? t('itinerary')
+                      : idx === 0
+                        ? t('outbound')
+                        : t('returnLeg')}
                   </div>
                   {s.segments.map((seg, si) => (
                     <div key={si} className="grid grid-cols-[80px_1fr] gap-2 py-1">
@@ -371,7 +381,7 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
                         <strong>{seg.origin_iata}</strong> → <strong>{seg.destination_iata}</strong>
                         {' · '}
                         {seg.marketing_carrier} {seg.marketing_carrier_iata}
-                        {seg.flight_number} · {seg.aircraft ?? 'Aircraft TBA'} ·{' '}
+                        {seg.flight_number} · {seg.aircraft ?? t('aircraftTba')} ·{' '}
                         {formatDuration(seg.duration)}
                       </span>
                     </div>
@@ -391,7 +401,7 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
               />
             </div>
             <div className="text-xs text-slate-500">
-              total · {offer.passenger_count} pax
+              {t('total')} · {offer.passenger_count} {t('pax')}
             </div>
             {offer.total_emissions_kg && (
               <div className="mt-1 text-[10px] text-emerald-600">
@@ -403,7 +413,7 @@ function FlightOfferCard({ offer }: { offer: NormalizedOffer }) {
             href={`/flights/checkout/${offer.id}`}
             className="rounded-xl bg-brand-600 px-5 py-2 font-semibold text-white transition hover:bg-brand-700"
           >
-            Select
+            {t('select')}
           </Link>
         </div>
       </div>
@@ -416,11 +426,13 @@ function SliceRow({
   ownerLogo,
   ownerName,
   direction,
+  t,
 }: {
   s: NormalizedOffer['slices'][number];
   ownerLogo: string | null;
   ownerName: string;
   direction: string | null;
+  t: ReturnType<typeof useTranslations>;
 }) {
   return (
     <div>
@@ -440,7 +452,7 @@ function SliceRow({
             <span className="flex-1 border-t border-dashed border-slate-300 px-2 text-center text-xs text-slate-500">
               <Clock className="mr-1 inline h-3 w-3" />
               {formatDuration(s.duration)} ·{' '}
-              {s.stops === 0 ? 'Direct' : s.stops === 1 ? '1 stop' : `${s.stops} stops`}
+              {s.stops === 0 ? t('direct') : s.stops === 1 ? t('oneStop') : `${s.stops} ${t('stops').toLowerCase()}`}
             </span>
             <span className="font-semibold">{formatTime(s.arriving_at)}</span>
           </div>

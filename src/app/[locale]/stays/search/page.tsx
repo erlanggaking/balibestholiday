@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { StayResults } from '@/components/stay-results';
 import { StaySearchForm } from '@/components/stay-search-form';
 import { Loader2 } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata = { title: 'Hotel results' };
 
@@ -18,11 +19,15 @@ interface SearchParams {
 }
 
 export default async function StaySearchResultsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<SearchParams>;
 }) {
+  const { locale } = await params;
   const sp = await searchParams;
+  const ts = await getTranslations({ locale, namespace: 'search' });
 
   return (
     <div className="bg-slate-50 pb-16">
@@ -46,11 +51,11 @@ export default async function StaySearchResultsPage({
           key={JSON.stringify(sp)}
           fallback={
             <div className="flex items-center justify-center py-16 text-slate-500">
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Finding the best stays...
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" /> {ts('searchingFares')}
             </div>
           }
         >
-          <StayResults params={sp as any} />
+          <StayResults params={sp as any} locale={locale} />
         </Suspense>
       </div>
     </div>

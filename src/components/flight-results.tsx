@@ -1,5 +1,6 @@
 import { duffel } from '@/lib/duffel';
 import { priceWithMarkup } from '@/lib/markup';
+import { getTranslations } from 'next-intl/server';
 import { FlightResultsClient, type NormalizedOffer } from './flight-results-client';
 
 interface Params {
@@ -10,9 +11,12 @@ interface Params {
   adults?: string;
   children?: string;
   cabinClass?: string;
+  locale?: string;
 }
 
-export async function FlightResults({ params }: { params: Params }) {
+export async function FlightResults({ params, locale }: { params: Params; locale: string }) {
+  const t = await getTranslations({ locale, namespace: 'flightResults' });
+  const ts = await getTranslations({ locale, namespace: 'search' });
   const {
     origin,
     destination,
@@ -26,7 +30,7 @@ export async function FlightResults({ params }: { params: Params }) {
   if (!origin || !destination || !departureDate) {
     return (
       <p className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-        Use the form above to start your search.
+        {ts('useFormAbove')}
       </p>
     );
   }
@@ -54,7 +58,7 @@ export async function FlightResults({ params }: { params: Params }) {
   if (error) {
     return (
       <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-        <strong>Couldn't fetch flights:</strong> {error}
+        <strong>{t('couldNotFetch')}</strong> {error}
       </div>
     );
   }
@@ -62,7 +66,7 @@ export async function FlightResults({ params }: { params: Params }) {
   if (offers.length === 0) {
     return (
       <p className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-        No flights found for these dates. Try different dates or destinations.
+        {t('noFlightsFound')}
       </p>
     );
   }

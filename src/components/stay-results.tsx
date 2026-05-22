@@ -1,5 +1,6 @@
 import { duffel } from '@/lib/duffel';
 import { priceWithMarkup } from '@/lib/markup';
+import { getTranslations } from 'next-intl/server';
 import { Star, MapPin, Wifi, Coffee, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import { Price } from './price';
@@ -16,13 +17,15 @@ interface Params {
   children?: string;
 }
 
-export async function StayResults({ params }: { params: Params }) {
+export async function StayResults({ params, locale }: { params: Params; locale: string }) {
+  const t = await getTranslations({ locale, namespace: 'stayResults' });
+  const ts = await getTranslations({ locale, namespace: 'search' });
   const { location, lat, lng, name, checkIn, checkOut, rooms = '1', adults = '2', children = '0' } = params;
 
   if (!checkIn || !checkOut || (!lat && !location)) {
     return (
       <p className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-        Use the form above to start your search.
+        {ts('useFormAbove')}
       </p>
     );
   }
@@ -109,10 +112,7 @@ export async function StayResults({ params }: { params: Params }) {
   if (error) {
     return (
       <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
-        <strong>Couldn't fetch stays:</strong> {error}
-        <div className="mt-2 text-sm">
-          Tip: Duffel test API supports limited locations. Try lat/lng of a major city.
-        </div>
+        <strong>{t('couldNotFetch')}</strong> {error}
       </div>
     );
   }
@@ -120,7 +120,7 @@ export async function StayResults({ params }: { params: Params }) {
   if (results.length === 0) {
     return (
       <p className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-        No stays found in this area for these dates.
+        {t('noStays')}
       </p>
     );
   }
@@ -131,23 +131,23 @@ export async function StayResults({ params }: { params: Params }) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr]">
       <aside className="hidden h-fit rounded-2xl border border-slate-200 bg-white p-5 lg:block">
-        <h3 className="mb-4 font-semibold">Filter</h3>
+        <h3 className="mb-4 font-semibold">{t('filter')}</h3>
         <div className="text-sm text-slate-500">
-          {results.length} stays in <span className="font-medium text-slate-900">{name}</span>
+          {results.length} {t('staysCount')} <span className="font-medium text-slate-900">{name}</span>
         </div>
       </aside>
 
       <div className="space-y-4">
         <h2 className="font-display text-xl font-bold">
-          Stays in {name ?? location}
+          {t('staysIn')} {name ?? location}
         </h2>
-        {await Promise.all(results.map(async (r) => <StayCard key={r.id} result={r} />))}
+        {await Promise.all(results.map(async (r) => <StayCard key={r.id} result={r} t={t} />))}
       </div>
     </div>
   );
 }
 
-async function StayCard({ result }: { result: any }) {
+async function StayCard({ result, t }: { result: any; t: any }) {
   const acc = result.accommodation ?? {};
   const baseAmount = parseFloat(result.cheapest_rate_total_amount ?? '0');
   const finalAmount = await priceWithMarkup(baseAmount, 'hotel');
@@ -189,17 +189,17 @@ async function StayCard({ result }: { result: any }) {
           </div>
           <div className="mt-4 flex items-end justify-between">
             <div>
-              <div className="text-xs text-slate-500">From</div>
+              <div className="text-xs text-slate-500">{t('fromLabel')}</div>
               <div className="font-display text-2xl font-bold text-brand-700">
                 <Price amountUSD={finalAmount} fromCurrency={result.cheapest_rate_currency} />
               </div>
-              <div className="text-xs text-slate-500">total stay</div>
+              <div className="text-xs text-slate-500">{t('totalStay')}</div>
             </div>
             <Link
               href={`/stays/checkout/${result.id}`}
               className="rounded-xl bg-brand-600 px-5 py-2 font-semibold text-white transition hover:bg-brand-700"
             >
-              View Deal
+              {t('viewDeal')}
             </Link>
           </div>
         </div>
