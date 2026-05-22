@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export const config = {
-  api: { bodyParser: false },
-};
+// In App Router, route handlers don't use the legacy `config` export.
+// FormData is handled natively via req.formData() — no bodyParser needed.
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
