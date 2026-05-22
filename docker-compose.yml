@@ -40,7 +40,7 @@ services:
       - bbh-net
 
   pgbouncer:
-    image: edoburu/pgbouncer:1.23.1
+    image: edoburu/pgbouncer:latest
     restart: unless-stopped
     environment:
       DB_HOST: db
