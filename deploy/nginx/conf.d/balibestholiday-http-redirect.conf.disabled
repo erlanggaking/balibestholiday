@@ -1,23 +1,14 @@
-# ============================================================
-# Bali Best Holiday — HTTP-only config (Stage 2: redirect to HTTPS)
-#
-# This replaces balibestholiday.conf AFTER cert is issued.
-# It only handles ACME renewal challenges + redirects everything else to HTTPS.
-# ============================================================
-
 server {
   listen 80 default_server;
   listen [::]:80 default_server;
   server_name balibestholiday.com www.balibestholiday.com _;
 
-  # ACME challenge — required for Certbot renewal
   location ^~ /.well-known/acme-challenge/ {
     root /var/www/certbot;
     default_type "text/plain";
     try_files $uri =404;
   }
 
-  # Everything else → HTTPS
   location / {
     return 301 https://$host$request_uri;
   }
