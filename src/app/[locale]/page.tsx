@@ -6,6 +6,10 @@ import { ProductCard } from '@/components/product-card';
 import { prisma } from '@/lib/prisma';
 import { ShieldCheck, Headphones, Award, Lock, ArrowRight } from 'lucide-react';
 
+// ISR: regenerate this page every 5 minutes (DB queries cached at Next.js layer)
+// Combined with nginx proxy_cache (30s), most requests hit cached HTML in <20ms.
+export const revalidate = 300;
+
 export default async function HomePage({
   params,
 }: {
@@ -15,26 +19,27 @@ export default async function HomePage({
   const t = await getTranslations({ locale, namespace: 'home' });
   const tProduct = await getTranslations({ locale, namespace: 'product' });
 
+  // 4 cards per section instead of 8 — halves DOM size, faster paint
   const [featuredTours, featuredHotels, popularCars, destinations] = await Promise.all([
     prisma.tour
       .findMany({
         where: { isActive: true, isFeatured: true },
         include: { images: { take: 1, orderBy: { sortOrder: 'asc' } }, translations: true },
-        take: 8,
+        take: 4,
       })
       .catch(() => []),
     prisma.hotel
       .findMany({
         where: { isActive: true, isFeatured: true },
         include: { images: { take: 1, orderBy: { sortOrder: 'asc' } }, translations: true },
-        take: 8,
+        take: 4,
       })
       .catch(() => []),
     prisma.car
       .findMany({
         where: { isActive: true, isFeatured: true },
         include: { images: { take: 1, orderBy: { sortOrder: 'asc' } }, translations: true },
-        take: 8,
+        take: 4,
       })
       .catch(() => []),
     prisma.destination
