@@ -81,9 +81,10 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # Override DB URL to use PgBouncer (port 6432) at runtime
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-bbh}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB:-balibestholiday}?pgbouncer=true&connection_limit=1"
-      # DIRECT_URL bypasses PgBouncer for migrations
+      # Direct DB connection (Prisma's built-in pool handles concurrency).
+      # PgBouncer was bypassed because pgbouncer:latest doesn't support SCRAM (PG16 default auth).
+      # Re-enable PgBouncer once we hit >50 concurrent users; for now, direct is faster.
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-bbh}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-balibestholiday}?connection_limit=20&pool_timeout=10"
       DIRECT_URL: "postgresql://${POSTGRES_USER:-bbh}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-balibestholiday}"
       REDIS_URL: "redis://redis:6379"
       NODE_ENV: production
@@ -92,8 +93,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      pgbouncer:
-        condition: service_started
       redis:
         condition: service_healthy
     deploy:

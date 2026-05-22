@@ -1,10 +1,4 @@
-# ============================================================
-# Bali Best Holiday — Nginx HTTPS config (Stage 2: post-cert)
-#
-# Activated by `enable-https.sh` AFTER Let's Encrypt cert is issued.
-# This file is loaded as `balibestholiday-https.conf` and the original
-# HTTP config is rewritten to redirect-only.
-# ============================================================
+proxy_cache_path /var/cache/nginx/bbh levels=1:2 keys_zone=bbh_cache:10m max_size=500m inactive=10m use_temp_path=off;
 
 server {
   listen 443 ssl;
@@ -20,36 +14,52 @@ server {
   ssl_session_cache shared:SSL:10m;
   ssl_session_timeout 1d;
   ssl_session_tickets off;
-  ssl_stapling on;
-  ssl_stapling_verify on;
 
   add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
   add_header X-Frame-Options "SAMEORIGIN" always;
   add_header X-Content-Type-Options "nosniff" always;
   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
   add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+  add_header X-Cache-Status $upstream_cache_status always;
 
   gzip on;
   gzip_vary on;
-  gzip_min_length 1024;
-  gzip_types text/plain text/css text/xml text/javascript application/javascript application/json application/xml+rss image/svg+xml;
+  gzip_comp_level 6;
+  gzip_min_length 256;
+  gzip_types text/plain text/css text/xml text/javascript application/javascript application/json application/xml+rss image/svg+xml font/woff font/woff2;
   gzip_proxied any;
+
 
   client_max_body_size 5M;
   client_body_timeout 60s;
 
+  # Static files: 1 year cache
   location /_next/static/ {
     proxy_pass http://nextjs_upstream;
     expires 365d;
     add_header Cache-Control "public, max-age=31536000, immutable";
+    proxy_cache bbh_cache;
+    proxy_cache_valid 200 365d;
   }
 
   location /_next/image {
     proxy_pass http://nextjs_upstream;
     expires 30d;
     add_header Cache-Control "public, max-age=2592000";
+    proxy_cache bbh_cache;
+    proxy_cache_valid 200 30d;
   }
 
+  # Static assets (favicon, robots, etc.)
+  location ~* \.(ico|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot)$ {
+    proxy_pass http://nextjs_upstream;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000";
+    proxy_cache bbh_cache;
+    proxy_cache_valid 200 7d;
+  }
+
+  # API: never cache user-specific responses
   location /api/duffel/ {
     limit_req zone=duffel burst=20 nodelay;
     limit_req_status 429;
@@ -64,9 +74,24 @@ server {
     include /etc/nginx/conf.d/proxy-common.inc;
   }
 
+  # HTML pages: micro-cache 30s for anonymous users (huge speedup for hot pages)
   location / {
     proxy_pass http://nextjs_upstream;
     include /etc/nginx/conf.d/proxy-common.inc;
+
+    # Cache only GET requests without auth cookie
+    proxy_cache bbh_cache;
+    proxy_cache_methods GET HEAD;
+    proxy_cache_valid 200 30s;
+    proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+    proxy_cache_background_update on;
+    proxy_cache_lock on;
+    proxy_cache_lock_timeout 5s;
+    proxy_ignore_headers Set-Cookie Cache-Control Vary Expires;
+    proxy_hide_header Vary;
+    proxy_cache_bypass $http_authorization $cookie_session_id $cookie_next_auth_session_token;
+    proxy_no_cache $http_authorization $cookie_session_id $cookie_next_auth_session_token;
+    proxy_cache_key "$scheme$request_method$host$request_uri$cookie_next_locale$cookie_user_currency";
   }
 
   location = /health {
