@@ -48,23 +48,43 @@ export default async function TourDetailPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Gallery */}
-      <div className="mb-8 grid grid-cols-1 gap-2 md:grid-cols-4 md:gap-3">
-        <div className="relative col-span-full aspect-[16/9] overflow-hidden rounded-2xl md:col-span-2 md:row-span-2 md:aspect-auto">
+      {/* Gallery — single big hero when only one image, mosaic when many */}
+      {tour.images.length <= 1 ? (
+        <div className="mb-8 relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100 md:aspect-[21/9]">
           <Image
-            src={tour.images[0]?.url ?? 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=1200'}
+            src={tour.images[0]?.url ?? 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=1600&q=80'}
             alt={title}
             fill
             priority
+            sizes="100vw"
             className="object-cover"
           />
         </div>
-        {tour.images.slice(1, 5).map((img) => (
-          <div key={img.id} className="relative hidden aspect-[4/3] overflow-hidden rounded-xl md:block">
-            <Image src={img.url} alt={img.alt ?? title} fill className="object-cover" />
+      ) : (
+        <div className="mb-8 grid grid-cols-1 gap-2 md:grid-cols-4 md:grid-rows-2 md:gap-3" style={{ aspectRatio: '21 / 9' }}>
+          <div className="relative col-span-full row-span-2 overflow-hidden rounded-2xl bg-slate-100 md:col-span-2">
+            <Image
+              src={tour.images[0].url}
+              alt={title}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover"
+            />
           </div>
-        ))}
-      </div>
+          {tour.images.slice(1, 5).map((img) => (
+            <div key={img.id} className="relative hidden overflow-hidden rounded-xl bg-slate-100 md:block">
+              <Image
+                src={img.url}
+                alt={img.alt ?? title}
+                fill
+                sizes="25vw"
+                className="object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
         <div>
