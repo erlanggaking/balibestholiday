@@ -8,14 +8,18 @@ import { LanguageSwitcher } from './language-switcher';
 import { CurrencySwitcher } from './currency-switcher';
 import { useSession, signOut } from 'next-auth/react';
 
-const navItems = [
-  { href: '/tours', key: 'tours' },
-  { href: '/hotels', key: 'hotels' },
-  { href: '/cars', key: 'cars' },
-  { href: '/flights', key: 'flights' },
-  { href: '/insurance', key: 'insurance' },
-  { href: '/blog', key: 'blog' },
-] as const;
+// Note: 'tours' translation key is reused as "Packages" label in i18n files
+// (or shown literally if not yet translated)
+type NavItem = { href: string; label: string; highlight?: boolean };
+const navItems: NavItem[] = [
+  { href: '/tours', label: 'Packages' },
+  { href: '/activities', label: 'Activities' },
+  { href: '/hotels', label: 'Hotels' },
+  { href: '/cars', label: 'Cars' },
+  { href: '/buses', label: 'Bus' },
+  { href: '/flights', label: 'Flights' },
+  { href: '/custom-package', label: 'Custom Package', highlight: true },
+];
 
 export function SiteHeader() {
   const t = useTranslations('nav');
@@ -32,14 +36,18 @@ export function SiteHeader() {
           <span>{tSite('name')}</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-5 lg:flex">
           {navItems.map((item) => (
             <Link
-              key={item.key}
-              href={item.href}
-              className="text-sm font-medium text-slate-700 transition hover:text-brand-600"
+              key={item.label}
+              href={item.href as any}
+              className={`text-sm font-medium transition ${
+                item.highlight
+                  ? 'rounded-full bg-gradient-to-r from-sunset-500 to-sunset-600 px-3 py-1.5 text-white hover:from-sunset-600 hover:to-sunset-700'
+                  : 'text-slate-700 hover:text-brand-600'
+              }`}
             >
-              {t(item.key)}
+              {item.label}
             </Link>
           ))}
         </nav>
@@ -95,12 +103,16 @@ export function SiteHeader() {
           <div className="mx-auto max-w-7xl space-y-1 px-4 py-3">
             {navItems.map((item) => (
               <Link
-                key={item.key}
-                href={item.href}
+                key={item.label}
+                href={item.href as any}
                 onClick={() => setOpen(false)}
-                className="block rounded-lg px-3 py-2 text-base font-medium text-slate-700 hover:bg-slate-100"
+                className={`block rounded-lg px-3 py-2 text-base font-medium ${
+                  item.highlight
+                    ? 'bg-sunset-50 text-sunset-700'
+                    : 'text-slate-700 hover:bg-slate-100'
+                }`}
               >
-                {t(item.key)}
+                {item.label}
               </Link>
             ))}
             <div className="flex items-center gap-2 px-3 py-2">

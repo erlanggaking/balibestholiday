@@ -9,6 +9,7 @@ import {
   Building2,
   Car,
   Plane,
+  Bus,
   ShieldCheck,
   Users,
   Tag,
@@ -18,6 +19,8 @@ import {
   Star,
   ImageIcon,
   ChevronRight,
+  Sparkles,
+  Wand2,
 } from 'lucide-react';
 
 const navGroups = [
@@ -29,6 +32,7 @@ const navGroups = [
     label: 'Operations',
     items: [
       { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
+      { href: '/admin/custom-requests', label: 'Custom Requests', icon: Wand2 },
       { href: '/admin/users', label: 'Users', icon: Users },
       { href: '/admin/reviews', label: 'Reviews', icon: Star },
     ],
@@ -36,21 +40,24 @@ const navGroups = [
   {
     label: 'Catalog',
     items: [
-      { href: '/admin/tours', label: 'Tours', icon: MapPin },
+      { href: '/admin/tours', label: 'Packages', icon: MapPin },
+      { href: '/admin/activities', label: 'Activities', icon: Sparkles },
       { href: '/admin/hotels', label: 'Hotels', icon: Building2 },
       { href: '/admin/cars', label: 'Cars', icon: Car },
+      { href: '/admin/buses', label: 'Bus Travel', icon: Bus },
       { href: '/admin/flights', label: 'Flights (local)', icon: Plane },
       { href: '/admin/insurance', label: 'Insurance', icon: ShieldCheck },
       { href: '/admin/destinations', label: 'Destinations', icon: MapPin },
     ],
   },
   {
-    label: 'Marketing',
+    label: 'CMS & Marketing',
     items: [
-      { href: '/admin/promo', label: 'Promo Codes', icon: Tag },
+      { href: '/admin/cms', label: 'CMS Pages', icon: FileText },
       { href: '/admin/banners', label: 'Banners', icon: ImageIcon },
       { href: '/admin/blog', label: 'Blog Posts', icon: FileText },
       { href: '/admin/faq', label: 'FAQ', icon: FileText },
+      { href: '/admin/promo', label: 'Promo Codes', icon: Tag },
     ],
   },
   {

@@ -35,22 +35,20 @@ export function SiteFooter() {
           </div>
 
           <FooterCol title={t('company')}>
-            <FooterLink href="/about">{t('about')}</FooterLink>
-            <FooterLink href="/careers">{t('careers')}</FooterLink>
-            <FooterLink href="/press">{t('press')}</FooterLink>
+            <FooterLink href="/pages/about">{t('about')}</FooterLink>
             <FooterLink href="/blog">{tNav('blog')}</FooterLink>
+            <FooterLink href="/custom-package">Custom Package</FooterLink>
           </FooterCol>
 
           <FooterCol title={t('support')}>
-            <FooterLink href="/help">{t('help')}</FooterLink>
-            <FooterLink href="/contact">{t('contact')}</FooterLink>
+            <FooterLink href="/pages/contact">{t('contact')}</FooterLink>
+            <FooterLink href="/pages/cancellation">Cancellation</FooterLink>
             <FooterLink href="/faq">{t('faq')}</FooterLink>
           </FooterCol>
 
           <FooterCol title={t('legal')}>
-            <FooterLink href="/legal/terms">{t('terms')}</FooterLink>
-            <FooterLink href="/legal/privacy">{t('privacy')}</FooterLink>
-            <FooterLink href="/legal/cookies">{t('cookies')}</FooterLink>
+            <FooterLink href="/pages/terms">{t('terms')}</FooterLink>
+            <FooterLink href="/pages/privacy">{t('privacy')}</FooterLink>
           </FooterCol>
         </div>
 
