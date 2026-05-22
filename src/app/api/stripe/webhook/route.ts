@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { prisma } from '@/lib/prisma';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -13,7 +16,7 @@ export async function POST(req: NextRequest) {
 
   let event;
   try {
-    event = stripe.webhooks.constructEvent(body, signature, secret);
+    event = getStripe().webhooks.constructEvent(body, signature, secret);
   } catch (err: any) {
     return NextResponse.json({ error: `Webhook signature failed: ${err.message}` }, { status: 400 });
   }
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
             amount: (session.amount_total ?? 0) / 100,
             currency: session.currency?.toUpperCase() ?? 'USD',
             status: 'SUCCEEDED',
-            rawResponse: session,
+            rawResponse: JSON.stringify(session),
           },
         });
       }

@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { stripe } from '@/lib/stripe';
+import { getStripe, isStripeConfigured } from '@/lib/stripe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { generateBookingCode } from '@/lib/utils';
 import { z } from 'zod';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 const itemSchema = z.object({
   productType: z.enum(['TOUR', 'HOTEL', 'CAR', 'FLIGHT', 'INSURANCE']),
@@ -79,8 +82,8 @@ export async function POST(req: NextRequest) {
     });
 
     // Create Stripe Checkout Session
-    if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_dummy') {
-      const stripeSession = await stripe.checkout.sessions.create({
+    if (isStripeConfigured()) {
+      const stripeSession = await getStripe().checkout.sessions.create({
         mode: 'payment',
         line_items: booking.items.map((it) => ({
           price_data: {

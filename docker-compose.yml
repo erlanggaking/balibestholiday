@@ -1,0 +1,141 @@
+# ============================================================
+# Bali Best Holiday — Production stack (single-VPS deployment)
+#
+# Services:
+#   - app       : Next.js 14 (containerized, behind Nginx)
+#   - db        : PostgreSQL 16 (persistent volume)
+#   - pgbouncer : connection pooler (handles many connections cheaply)
+#   - redis     : cache (used for Duffel response cache + sessions)
+#   - nginx     : reverse proxy + HTTPS termination (with Certbot)
+#
+# Recommended VPS: 12 GB RAM / 6 vCPU / 100 GB NVMe (e.g., Cloud VPS 20)
+#
+# Quickstart:
+#   1. cp .env.example .env  →  fill values
+#   2. docker compose up -d --build
+#   3. docker compose exec app npm run db:seed      # one-time
+#   4. docker compose exec nginx /scripts/init-letsencrypt.sh   # HTTPS
+# ============================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bbh}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
+      POSTGRES_DB: ${POSTGRES_DB:-balibestholiday}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bbh}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+    networks:
+      - bbh-net
+
+  pgbouncer:
+    image: edoburu/pgbouncer:1.23.1
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-bbh}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB:-balibestholiday}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 25
+      RESERVE_POOL_SIZE: 5
+      ADMIN_USERS: ${POSTGRES_USER:-bbh}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - bbh-net
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - bbh-net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: balibestholiday:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Override DB URL to use PgBouncer (port 6432) at runtime
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-bbh}:${POSTGRES_PASSWORD}@pgbouncer:5432/${POSTGRES_DB:-balibestholiday}?pgbouncer=true&connection_limit=1"
+      # DIRECT_URL bypasses PgBouncer for migrations
+      DIRECT_URL: "postgresql://${POSTGRES_USER:-bbh}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-balibestholiday}"
+      REDIS_URL: "redis://redis:6379"
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_started
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    networks:
+      - bbh-net
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./deploy/nginx/scripts:/scripts:ro
+      - certbot-www:/var/www/certbot
+      - certbot-conf:/etc/letsencrypt
+    depends_on:
+      - app
+    networks:
+      - bbh-net
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - certbot-www:/var/www/certbot
+      - certbot-conf:/etc/letsencrypt
+    entrypoint: |
+      sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done'
+    networks:
+      - bbh-net
+
+volumes:
+  db-data:
+  redis-data:
+  certbot-www:
+  certbot-conf:
+
+networks:
+  bbh-net:
+    driver: bridge
