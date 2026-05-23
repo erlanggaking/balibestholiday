@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Sparkles,
   Wand2,
+  BookOpen,
 } from 'lucide-react';
 
 const navGroups = [
@@ -66,6 +67,10 @@ const navGroups = [
       { href: '/admin/markup', label: 'Markup (Duffel)', icon: DollarSign },
       { href: '/admin/settings', label: 'Settings', icon: Settings },
     ],
+  },
+  {
+    label: 'Help',
+    items: [{ href: '/admin/manual', label: 'User Manual', icon: BookOpen }],
   },
 ] as const;
 
