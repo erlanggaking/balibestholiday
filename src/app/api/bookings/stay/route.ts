@@ -88,8 +88,17 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     console.error('[bookings/stay]', e?.errors ?? e);
+    // Same expired-quote handling as the flight booking endpoint.
+    const firstErr = e?.errors?.[0];
+    const code = firstErr?.code;
+    const msg = (firstErr?.message ?? e?.message ?? '').toString();
+    const isExpired =
+      code === 'quote_no_longer_available' ||
+      code === 'rate_no_longer_available' ||
+      code === 'order_creation_failed' ||
+      /no longer available|expired|select another/i.test(msg);
     return NextResponse.json(
-      { error: e?.errors?.[0]?.message ?? e?.message ?? 'Booking failed' },
+      { error: msg || 'Booking failed', code: code ?? null, expired: isExpired },
       { status: 400 },
     );
   }

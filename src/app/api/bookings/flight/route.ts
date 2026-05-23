@@ -110,8 +110,25 @@ export async function POST(req: NextRequest) {
     });
   } catch (e: any) {
     console.error('[bookings/flight]', e?.errors ?? e);
+
+    // Duffel returns "offer_no_longer_available" / "Please select another offer"
+    // when the offer has expired (Duffel offers live ~20-30 min). Surface this
+    // distinctly so the UI can route the user back to search instead of just
+    // showing a generic red banner.
+    const firstErr = e?.errors?.[0];
+    const code = firstErr?.code;
+    const msg = (firstErr?.message ?? e?.message ?? '').toString();
+    const isExpired =
+      code === 'offer_no_longer_available' ||
+      code === 'order_creation_failed' ||
+      /no longer available|select another offer|expired/i.test(msg);
+
     return NextResponse.json(
-      { error: e?.errors?.[0]?.message ?? e?.message ?? 'Booking failed' },
+      {
+        error: msg || 'Booking failed',
+        code: code ?? null,
+        expired: isExpired,
+      },
       { status: 400 },
     );
   }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, User, Mail, Phone } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Search, AlertTriangle } from 'lucide-react';
 
 interface PassengerForm {
   type: string;
@@ -25,6 +25,7 @@ export function FlightCheckoutForm({ offerId, passengers, identityRequired }: Pr
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expired, setExpired] = useState(false);
   const [contact, setContact] = useState({ email: '', phone_number: '' });
   const [paxList, setPaxList] = useState<PassengerForm[]>(
     passengers.map((p) => ({
@@ -44,6 +45,7 @@ export function FlightCheckoutForm({ offerId, passengers, identityRequired }: Pr
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setExpired(false);
     setSubmitting(true);
     try {
       const res = await fetch('/api/bookings/flight', {
@@ -56,7 +58,16 @@ export function FlightCheckoutForm({ offerId, passengers, identityRequired }: Pr
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? 'Booking failed');
+      if (!res.ok) {
+        if (json.expired) {
+          setExpired(true);
+          setError(null);
+        } else {
+          setError(json.error ?? 'Booking failed');
+        }
+        setSubmitting(false);
+        return;
+      }
       router.push(`/checkout/success?code=${json.booking_code}`);
     } catch (e: any) {
       setError(e?.message ?? 'Booking failed');
@@ -173,7 +184,27 @@ export function FlightCheckoutForm({ offerId, passengers, identityRequired }: Pr
         </div>
       </section>
 
-      {error && (
+      {expired && (
+        <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+          <div className="mb-2 flex items-center gap-2 font-semibold text-amber-900">
+            <AlertTriangle className="h-5 w-5" />
+            Penawaran sudah kadaluarsa
+          </div>
+          <p className="mb-3 text-sm text-amber-800">
+            Harga penerbangan ini sudah berubah atau kursi sudah habis. Silakan cari ulang
+            untuk mendapatkan penawaran terbaru — datanya cuma butuh beberapa detik.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-700"
+          >
+            <Search className="h-4 w-4" /> Cari penerbangan lagi
+          </button>
+        </div>
+      )}
+
+      {error && !expired && (
         <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
           {error}
         </div>
