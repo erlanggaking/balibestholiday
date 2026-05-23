@@ -771,6 +771,15 @@ model Booking {
 
   @@index([userId])
   @@index([status])
+  // Compound indexes for high-traffic admin/user listings.
+  // Postgres can use these for both "WHERE status=? ORDER BY createdAt DESC"
+  // (admin dashboard) and "WHERE userId=? ORDER BY createdAt DESC" (user history).
+  // Without them, every booking-list page does a Seq Scan once table > 50k rows.
+  @@index([status, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([paymentStatus, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([stripeSessionId])
 }
 
 model BookingItem {

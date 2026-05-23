@@ -5,6 +5,7 @@ import { FlightResultsClient, type NormalizedOffer } from './flight-results-clie
 import { FlightDateStrip, type DateStripItem } from './flight-date-strip';
 import { Plane, Clock, TrendingDown } from 'lucide-react';
 import { Price } from './price';
+import { getOrSet, cacheKey, cacheTTL } from '@/lib/cache';
 
 interface Params {
   origin?: string;
@@ -17,7 +18,13 @@ interface Params {
   locale?: string;
 }
 
-/** Fetch lowest priced direct offer for a single date (used to populate the date strip). */
+/**
+ * Fetch lowest priced direct offer for a single date (used to populate the date strip).
+ *
+ * Cached at Redis layer for 90s. Without this, 5 strip dates × every visitor
+ * = guaranteed Duffel rate-limit (50 req/min). With cache, 1,000 visitors
+ * scrolling the same route share 5 upstream calls every 90s.
+ */
 async function fetchLowestForDate(
   origin: string,
   destination: string,
@@ -26,29 +33,33 @@ async function fetchLowestForDate(
   children: number,
   cabinClass: string,
 ): Promise<{ amount: number; currency: string } | null> {
-  try {
-    const passengers: any[] = [];
-    for (let i = 0; i < adults; i++) passengers.push({ type: 'adult' });
-    for (let i = 0; i < children; i++) passengers.push({ type: 'child' });
+  const pax = `${adults}a${children}c`;
+  const key = cacheKey.duffelOffers(origin, destination, date, undefined, pax, cabinClass) + ':strip';
+  return getOrSet<{ amount: number; currency: string } | null>(key, cacheTTL.duffelOffers, async () => {
+    try {
+      const passengers: any[] = [];
+      for (let i = 0; i < adults; i++) passengers.push({ type: 'adult' });
+      for (let i = 0; i < children; i++) passengers.push({ type: 'child' });
 
-    const res: any = await duffel.offerRequests.create({
-      slices: [{ origin, destination, departure_date: date }],
-      passengers,
-      cabin_class: cabinClass as any,
-      return_offers: true,
-      max_connections: 0,
-    } as any);
-    const offers = (res.data?.offers ?? []).filter((o: any) => o.owner?.iata_code !== 'ZZ');
-    if (offers.length === 0) return null;
-    let min: { amt: number; cur: string } | null = null;
-    for (const o of offers as any[]) {
-      const amt = parseFloat(o.total_amount);
-      if (!min || amt < min.amt) min = { amt, cur: o.total_currency };
+      const res: any = await duffel.offerRequests.create({
+        slices: [{ origin, destination, departure_date: date }],
+        passengers,
+        cabin_class: cabinClass as any,
+        return_offers: true,
+        max_connections: 0,
+      } as any);
+      const offers = (res.data?.offers ?? []).filter((o: any) => o.owner?.iata_code !== 'ZZ');
+      if (offers.length === 0) return null;
+      let min: { amt: number; cur: string } | null = null;
+      for (const o of offers as any[]) {
+        const amt = parseFloat(o.total_amount);
+        if (!min || amt < min.amt) min = { amt, cur: o.total_currency };
+      }
+      return min ? { amount: min.amt, currency: min.cur } : null;
+    } catch {
+      return null;
     }
-    return min ? { amount: min.amt, currency: min.cur } : null;
-  } catch {
-    return null;
-  }
+  });
 }
 
 export async function FlightResults({ params, locale }: { params: Params; locale: string }) {
